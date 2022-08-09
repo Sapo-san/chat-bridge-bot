@@ -5,7 +5,9 @@ Puente para chats de discord, telegram y whatsapp (funcionalidad para whatsapp a
 ## Funcionalidades actuales
 - Puente Telegram <---> Discord
     * Envio de texto funcional
-    * Envio de imagenes funciona solo en dirección Discord ---> Telegram
+    * Envio de imágenes
+        * Discord -> Telegram: Envia URL de la imagen (Telegram carga la preview)
+        * Telegram -> Discord: Envia la imagen
 
 - Logs en consola son coloreados por plataforma
     * Errores/Logging por defecto de Python se imprime en el color predeterminado de la consola.
@@ -22,7 +24,7 @@ Output de ```pip list```
 colorama              0.4.5
 discord.py            1.7.3
 python-dotenv         0.20.0
-python-telegram-bot   13.12
+python-telegram-bot   13.13
 ```
 ## Para iniciar el bot
 En carpeta raiz, crear archivo ```.env``` con las siguientes variables:
@@ -36,9 +38,6 @@ Luego, crear dentro de la carpeta ```src/``` el archivo ```messages.py``` que co
 Después de instalar dependencias, inciar bot con ```python main.py```
 
 
-
-
-
 ### Plantilla src/messages.py 
 ```python
 '''
@@ -50,4 +49,8 @@ missing_env_vars = "Missing enviroment variables:"
 help_cmd_telegram = "this bot is for private use. Ask for bot host for help"
 
 loading_logic = "Loading Logic..."
+
+sending_image_1 = "sent an image"
+
+sending_image_2 = "with caption"
 ```
