@@ -2,11 +2,13 @@
 from os import getenv
 from telegram.ext import CommandHandler, MessageHandler, Filters
 from telegram import ParseMode
+from io import BytesIO
+from discord import File
 
 
 # My libraries
 from src.terminal_logger import tprint
-from src.messages import help_cmd_telegram, loading_logic
+import src.messages as m
 
 async def build_and_send_discord_message(msg, discordBot):
     '''
@@ -17,15 +19,26 @@ async def build_and_send_discord_message(msg, discordBot):
     if channel:
         await channel.send(f"{msg['from_user']['username']}: {msg['text']}")
 
-def print_msg_on_console(message):
-    message_author = message['from_user']
-    if (message_author['first_name'] != None and message_author['last_name'] != None):
-        tprint(message_author['first_name'] + ' ' + message_author['last_name'] + ': ' + update['message']['text'])
-    else:
-        tprint(message_author['username'] + ': ' + message['text'])
+async def send_discord_image(author, caption, img, discordBot):
+    '''
+    Envia una imagen a Discord
+    '''
+    # Procesar imagen
+    processed_img = File(img, "image_from_telegram.png")
+
+    # Enviarla al canal
+    channel_id = int(getenv("DISCORD_CHANNEL_ID"))
+    channel = discordBot.get_channel(channel_id)
+
+    if caption == None:
+        caption = ""
+
+    if channel:
+        await channel.send(f"{author}: {caption}", file=processed_img)
+
 
 def load_telegram_logic(updater, discordBot):
-    tprint(loading_logic)
+    tprint(m.loading_logic)
 
     ### Definición de handlers
     # ------ Comandos y Logging de errores ------
@@ -43,9 +56,10 @@ def load_telegram_logic(updater, discordBot):
         if (update['message']['chat']['id'] == int(getenv("TELEGRAM_CHAT_ID"))):
             ## Si es mensaje del grupo...
             # printeamos en consola el usuario y su mensaje
-            print_msg_on_console(update['message'])
+            message_author = update['message']['from_user']
+            tprint(message_author['username'] + ': ' + update['message']['text'])
 
-            # Y luego enviamos el mensaje de texto a discord
+            # Y luego enviamos la imagen a discord
             discordBot.loop.create_task(build_and_send_discord_message(update['message'], discordBot))
             
 
@@ -53,13 +67,20 @@ def load_telegram_logic(updater, discordBot):
             pass
     
     def read_and_resend_photo(update, context):
-        print(update)
-        '''
-            SEGUIR TRABAJANDO AQUÍ
+        img_file = context.bot.get_file(update.message.photo[-1].file_id)
+        byte_img =  BytesIO(img_file.download_as_bytearray())
 
-            https://github.com/python-telegram-bot/v13.x-wiki/wiki/Code-snippets#working-with-files-and-media
-        '''
-        pass
+        photo_caption = update['message']['caption']
+        message_author = update['message']['from_user']['username']
+
+        # printeamos en consola el usuario y su mensaje
+        if photo_caption != None:
+            tprint(f'{message_author} {m.sending_image_1} (ID:{update.message.photo[-1].file_id}) {m.sending_image_2} {photo_caption}')
+        else:
+            tprint(f'{message_author} {m.sending_image_1} (ID:{update.message.photo[-1].file_id})')
+
+        discordBot.loop.create_task(send_discord_image(message_author, photo_caption, byte_img, discordBot))
+
 
     ## Registrando handlers para el funcionamiento del bot 
 

@@ -40,6 +40,7 @@ def load_discord_logic(client, telegramBot):
         if message.channel.id == int(getenv("DISCORD_CHANNEL_ID")):
             # printear mensaje en consola
             print_msg_on_console(message)
+            
 
             # construir y enviar mensaje a telegram
             build_and_send_telegram_message(telegramBot.bot, message)
