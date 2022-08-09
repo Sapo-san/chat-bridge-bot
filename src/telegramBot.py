@@ -35,7 +35,7 @@ def load_telegram_logic(updater, discordBot):
 
     def non_cmd_error(update, context):
         # Logear error causado por actualización
-        tprint('Update ' + update + ' caused error ' + context.error)
+        tprint('Update ' + update.message + ' caused error ' + context.error)
 
     # ------ Funciones de Puente a Discord ------
     def read_and_resend_message(update, context):

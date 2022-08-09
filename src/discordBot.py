@@ -22,10 +22,11 @@ def build_and_send_telegram_message(tgBot, message):
     else: # Si no hay attachment, probablemente es solo texto
         tgBot.send_message(chat_id=getenv("TELEGRAM_CHAT_ID"), text=f"{message.author.nick}: {message.content}")
 
-
 def load_discord_logic(client, telegramBot):
 
     dprint(loading_logic)
+
+
 
     @client.event
     async def on_ready():

@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from discord import Client as discordClient
 from telegram.ext import Updater
 from threading import Thread
+import asyncio
 
 
 # My Libraries
@@ -57,18 +58,23 @@ def main():
     telegramBot = Updater(tg_token, use_context=True)
     
     # Inicializando logica y threads de cada bots
+    loop = asyncio.get_event_loop()
+    loop.create_task(discordBot.start(ds_token))
     load_discord_logic(discordBot, telegramBot)
-    td = Thread(None, target=discordBot.run, args=(ds_token,), daemon=True)
+    td = Thread(None, target=loop.run_forever, daemon=True)
+    td.name = "Discord Thread"
+
     load_telegram_logic(telegramBot, discordBot)
     tt = Thread(None, target=telegramBot.start_polling, daemon=True)
+    tt.name = "Telegram Thread"
 
     ## Iniciando ambos bots
     # Discord
     td.start()
 
+    
     # Telegram
-    tt.start() 
-
+    tt.start()
     try:
         '''
             Mantener thread principal funcionando
