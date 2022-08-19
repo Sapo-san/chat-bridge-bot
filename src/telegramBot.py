@@ -36,6 +36,50 @@ async def send_discord_image(author, caption, img, discordBot):
     if channel:
         await channel.send(f"{author}: {caption}", file=processed_img)
 
+async def send_discord_sticker(author, img, discordBot):
+    '''
+        Envia un sticker a Discord (como una imagen)
+    '''
+    # Procesar sticker (?)
+    processed_img = File(img, "image_from_telegram.png")
+
+    # Enviarla al canal
+    channel_id = int(getenv("DISCORD_CHANNEL_ID"))
+    channel = discordBot.get_channel(channel_id)
+
+    if channel:
+        await channel.send(f"{author} {m.sending_sticker}:", file=processed_img)
+
+async def send_discord_video(author, caption, video, discordBot):
+    '''
+        Envia un video a Discord
+    '''
+    # Procesar video
+    processed_img = File(video, "video_from_telegram.mp4")
+
+    # Enviarla al canal
+    channel_id = int(getenv("DISCORD_CHANNEL_ID"))
+    channel = discordBot.get_channel(channel_id)
+
+    if caption == None:
+        caption = ""
+
+    if channel:
+        await channel.send(f"{author}: {caption}", file=processed_img)
+
+async def send_discord_audio(author, audio, discordBot):
+    '''
+        Envia un audio a Discord
+    '''
+    # Procesar video
+    processed_audio = File(audio, "voice_message.ogg")
+
+    # Enviarla al canal
+    channel_id = int(getenv("DISCORD_CHANNEL_ID"))
+    channel = discordBot.get_channel(channel_id)
+
+    if channel:
+        await channel.send(f"{author}:", file=processed_audio)
 
 def load_telegram_logic(updater, discordBot):
     tprint(m.loading_logic)
@@ -44,7 +88,7 @@ def load_telegram_logic(updater, discordBot):
     # ------ Comandos y Logging de errores ------
     def cmd_help(update, context):
         # responder comando de /help en telegram
-        update.message.reply_text(text=help_cmd_telegram, parse_mode=ParseMode.MARKDOWN_V2)
+        update.message.reply_text(text=m.help_cmd_telegram, parse_mode=ParseMode.MARKDOWN_V2)
 
     def non_cmd_error(update, context):
         # Logear error causado por actualización
@@ -62,11 +106,13 @@ def load_telegram_logic(updater, discordBot):
             # Y luego enviamos la imagen a discord
             discordBot.loop.create_task(build_and_send_discord_message(update['message'], discordBot))
             
-
         else: # alguien más está hablando con el bot? f
             pass
     
     def read_and_resend_photo(update, context):
+        '''
+            Envia imagen a discord
+        '''
         img_file = context.bot.get_file(update.message.photo[-1].file_id)
         byte_img =  BytesIO(img_file.download_as_bytearray())
 
@@ -81,7 +127,50 @@ def load_telegram_logic(updater, discordBot):
 
         discordBot.loop.create_task(send_discord_image(message_author, photo_caption, byte_img, discordBot))
 
+    def read_and_resend_sticker(update, context):
+        '''
+            Envia Sticker como imagen
+        '''
+        img_file = context.bot.get_file(update.message.sticker.file_id)
+        byte_img =  BytesIO(img_file.download_as_bytearray())
 
+        message_author = update['message']['from_user']['username']
+
+        tprint(f'{message_author} {m.sending_sticker} (ID:{update.message.sticker.file_id})')
+
+        discordBot.loop.create_task(send_discord_sticker(message_author, byte_img, discordBot))
+
+    def read_and_resend_video(update, context):
+        '''
+            Envia video a discord
+        '''
+        video_file = context.bot.get_file(update.message.video.file_id)
+        byte_video = BytesIO(video_file.download_as_bytearray())
+
+        video_caption = update['message']['caption']
+        message_author = update['message']['from_user']['username']
+
+        # printeamos en consola el usuario y su mensaje
+        if video_caption != None:
+            tprint(f'{message_author} {m.sending_video_1} (ID:{update.message.video.file_id}) {m.sending_video_2} {video_caption}')
+        else:
+            tprint(f'{message_author} {m.sending_video_1} (ID:{update.message.video.file_id})')
+
+        discordBot.loop.create_task(send_discord_video(message_author, video_caption, byte_video, discordBot))
+
+    def read_and_resend_audio(update, context):
+        '''
+            Envia video a discord
+        '''
+        audio_file = context.bot.get_file(update.message.voice.file_id)
+        byte_video = BytesIO(audio_file.download_as_bytearray())
+
+        message_author = update['message']['from_user']['username']
+
+        # printeamos en consola el usuario y su mensaje
+        tprint(f'{message_author} {m.sending_voice} (ID:{update.message.voice.file_id})')
+
+        discordBot.loop.create_task(send_discord_audio(message_author, byte_video, discordBot))
     ## Registrando handlers para el funcionamiento del bot 
 
     # Contestar comandos en telegram
@@ -90,7 +179,9 @@ def load_telegram_logic(updater, discordBot):
     # Añadiendo Handlers para que funcione el puente a discord
     updater.dispatcher.add_handler(MessageHandler(Filters.text, read_and_resend_message))
     updater.dispatcher.add_handler(MessageHandler(Filters.photo, read_and_resend_photo))
+    updater.dispatcher.add_handler(MessageHandler(Filters.sticker, read_and_resend_sticker))
+    updater.dispatcher.add_handler(MessageHandler(Filters.video, read_and_resend_video))
+    updater.dispatcher.add_handler(MessageHandler(Filters.voice, read_and_resend_audio))
 
     # log all errors
     updater.dispatcher.add_error_handler(non_cmd_error)
-

@@ -1,5 +1,5 @@
 # PDE Bot
-## Version 0.0.0
+## Version 0.1.0
 Puente para chats de discord, telegram y whatsapp (funcionalidad para whatsapp aún pendiente). Hice este mini proyecto para ejercitar mis conocimientos de python y aprender sobre el funcionamiento de las APIs de Telegram y Discord. 
 
 ## Funcionalidades actuales
@@ -8,6 +8,16 @@ Puente para chats de discord, telegram y whatsapp (funcionalidad para whatsapp a
     * Envio de imágenes
         * Discord -> Telegram: Envia URL de la imagen (Telegram carga la preview)
         * Telegram -> Discord: Envia la imagen
+    * Envio de videos:
+        * Discord -> Telegram: Envia URL de del video (Telegram carga la preview)
+        * Telegram -> Discord: Envia el video
+    * Envio de stickers:
+        * Telegram -> Discord: Envia el sticker como una imagen
+    * Envio de mensajes de voz:
+        * Telegram -> Discord: Envia el mensaje como un archivo de voz
+    * Envio de archivos\*:
+        * Discord -> Telegram: Manda la url del archivo.
+
 
 - Logs en consola son coloreados por plataforma
     * Errores/Logging por defecto de Python se imprime en el color predeterminado de la consola.
@@ -41,16 +51,24 @@ Después de instalar dependencias, inciar bot con ```python main.py```
 ### Plantilla src/messages.py 
 ```python
 '''
-    Mensajes del Bot
+    Bot Messages
 '''
 
-missing_env_vars = "Missing enviroment variables:"
+missing_env_vars = "Missing enviroment vars: "
 
-help_cmd_telegram = "this bot is for private use. Ask for bot host for help"
+help_cmd_telegram = "Bot is for private use, ask deployer for help."
 
-loading_logic = "Loading Logic..."
+loading_logic = "Loading bot logic..."
 
 sending_image_1 = "sent an image"
 
 sending_image_2 = "with caption"
+
+sending_sticker = "sent a sticker"
+
+sending_video_1 = "sent a video"
+
+sending_video_2 = "with caption"
+
+sending_voice = "sent a voice message"
 ```
